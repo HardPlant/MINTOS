@@ -8,7 +8,7 @@ jmp 0x07C0:START	;CS<-0x07C0, goto START
 ;;;
 ;MINT64 OS Environment
 ;;;
-TOTALSECTORCOUNT: dw 1 ; MINT64OS Image Size, Max to 1152 Sector(0x90000byte)
+TOTALSECTORCOUNT: dw 0x02 ; MINT64OS Image Size, Max to 1152 Sector(0x90000byte)
 
 ;;;
 ;Code Section

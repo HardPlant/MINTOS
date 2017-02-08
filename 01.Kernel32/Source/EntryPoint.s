@@ -41,7 +41,9 @@ PROTECTEDMODE:
 	call PRINTMESSAGE
 	add esp, 12
 
-	jmp $ ; do InfLoop on currentloc
+	jmp dword 0x08: 0x10200 ; CS Segment Selector -> Kernel Code Descriptor(0x08)
+							; jmp to C Lang Kernel
+
 
 ;Prints Message
 ;x, y, str
