@@ -9,15 +9,31 @@ START:
 	mov ds, ax
 	mov es, ax
 
+	;;;
+	;Enable A20 Gate
+	;try BIOS, then SysCtrlPort
+	;;;
+	mov ax,0x2401 ; set service to actviate A20 gate
+	int 0x15	; call BIOS interrupt
 
-	cli
-	lgdt[GDTR]
-	mov eax, 0x4000003B	;PG=0, CD=1, NW=0, AM=0,WP=0,
-						;NE=1, ET=1, TS=1, EM=0,MP=1,PE=1
-	mov cr0, eax	; copy to CR0 -> go to protect mode
+	jc .A20GATEERROR ; check if successes
+	jmp .A20GATESUCCESS
+
+	.A20GATEERROR:
+		in al,0x92
+		or al, 0x02
+		and al, 0xFE
+		out 0x92, al
+
+	.A20GATESUCCESS:
+		cli
+		lgdt[GDTR]
+		mov eax, 0x4000003B	;PG=0, CD=1, NW=0, AM=0,WP=0,
+							;NE=1, ET=1, TS=1, EM=0,MP=1,PE=1
+		mov cr0, eax	; copy to CR0 -> go to protect mode
 
 
-	jmp dword 0x08: (PROTECTEDMODE - $$ + 0x10000) ; +offset
+		jmp dword 0x08: (PROTECTEDMODE - $$ + 0x10000) ; +offset
 
 
 
@@ -40,7 +56,6 @@ PROTECTEDMODE:
 
 	call PRINTMESSAGE
 	add esp, 12
-
 	jmp dword 0x08: 0x10200 ; CS Segment Selector -> Kernel Code Descriptor(0x08)
 							; jmp to C Lang Kernel
 
@@ -78,7 +93,7 @@ PRINTMESSAGE:
 	mov esi, dword [ebp+16];
 
 .MESSAGELOOP:
-	mov cl, byte[esi]	;cl -> ecx low bit
+	mov cl, byte[esi]	; cl -> ecx low bit
 
 	cmp cl, 0
 	je .MESSAGEEND
